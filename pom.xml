@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.wy.es</groupId>
-    <artifactId>elasticsearch</artifactId>
+    <artifactId>springboot-data-es-elk</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>springboot-data-es-elk</name>
     <description>Demo project for Spring Boot</description>
