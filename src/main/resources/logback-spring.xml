@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- scan="true"    当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。 -->
+<!-- scanPeriod="30 seconds"   设置每30秒自动扫描,若没有指定具体单位则以milliseconds为标准(单位:milliseconds, seconds, minutes or hours)  -->
+<!-- debug="false"当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。-->
+<configuration scan="true" scanPeriod="30 seconds">
+    <!-- 上下文名称  -->
+    <contextName>test</contextName>
+
+    <!-- 存放日志文件路径 -->
+    <property name="Log_Home" value="./logs"/>
+
+    <!-- 控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>UTF-8</charset>
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 正在记录的日志文件的路径及文件名 -->
+        <file>${Log_Home}/es-test.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <FileNamePattern>ms-mr-%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!--日志文件保留天数-->
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!--上传日志到LogStash-->
+    <appender name="LOGSTASH_LOCAL"
+              class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>13.14.100.65:5044</destination>
+        <!-- encoder必须配置,有多种可选 -->
+        <encoder charset="UTF-8" class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"appName":"elasticsearch"}</customFields>
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>-->
+        </encoder>
+        <connectionStrategy>
+            <roundRobin>
+                <connectionTTL>5 minutes</connectionTTL>
+            </roundRobin>
+        </connectionStrategy>
+    </appender>
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+            <!--<appender-ref ref="FILE"/>-->
+            <appender-ref ref="LOGSTASH_LOCAL"/>
+        </root>
+    </springProfile>
+</configuration>
